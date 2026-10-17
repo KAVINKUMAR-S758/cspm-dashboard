@@ -1,0 +1,9 @@
+services:
+  worker:
+    environment:
+      CELERY_WORKER_CONCURRENCY: "4"
+  postgres:
+    networks:
+      default:
+        aliases:
+          - postgres-db

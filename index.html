@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloud Posture</title>
+<style>
+:root{--bg:#eceff3;--panel:#fff;--ink:#17202b;--mute:#667487;--line:#d9dfe7;--acc:#0b6e8a;
+--crit:#b4233c;--high:#d9631e;--medium:#c9962b;--low:#3a7ca5;--informational:#9aa7b5;--pass:#2f8f6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif;display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+button,input,select{font:inherit}
+aside{background:var(--ink);color:#d7dee7;padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+aside h1{font:600 19px Georgia,serif;margin:0 0 18px;color:#fff;letter-spacing:.2px}
+.acct{all:unset;cursor:pointer;padding:10px 12px;border-radius:8px;display:block}
+.acct:hover,.acct.on{background:#243242}
+.acct:focus-visible,button:focus-visible{outline:2px solid #7cc4dc;outline-offset:2px}
+.acct b{display:block;color:#fff;font-weight:600}.acct small{color:#93a3b5;font-family:ui-monospace,monospace}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;background:#93a3b5}
+.dot.ok{background:#4fc08d}.dot.bad{background:#e5677f}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--crit);border:1px solid var(--line)}
+aside .btn{margin-top:auto;background:#fff;color:var(--ink)}
+main{padding:26px 34px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.top h2{font:600 26px Georgia,serif;margin:0;margin-right:auto}
+.chip{padding:3px 11px;border-radius:99px;background:#dfe6ee;font-size:13px}
+.chip.run{background:#fbeccb;color:#7a5600}.chip.done{background:#d5eee3;color:#1f6a4d}.chip.fail{background:#f6d6dc;color:var(--crit)}
+.ribbon{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:18px}
+.ribbon .big{font:600 34px Georgia,serif}.ribbon .big small{font:15px "Segoe UI",sans-serif;color:var(--mute);margin-left:8px}
+.strip{display:flex;height:26px;border-radius:6px;overflow:hidden;margin:14px 0 10px;background:var(--line)}
+.strip i{display:block;min-width:2px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+.legend b{color:var(--ink);font-variant-numeric:tabular-nums}.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tabs button{all:unset;cursor:pointer;padding:9px 16px;border-bottom:2px solid transparent;color:var(--mute)}
+.tabs button.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin:0 0 12px;font-size:15px}
+.row{display:grid;grid-template-columns:minmax(80px,40%) 1fr 44px;gap:10px;align-items:center;font-size:13.5px;margin:7px 0}
+.row span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{height:8px;background:var(--bg);border-radius:4px}.bar i{display:block;height:100%;border-radius:4px;background:var(--acc)}
+.row em{font-style:normal;text-align:right;font-variant-numeric:tabular-nums;color:var(--mute)}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.filters select,.filters input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.filters input{flex:1;min-width:200px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13.5px}
+th{text-align:left;background:#f6f8fa;padding:9px 12px;font-weight:600;color:var(--mute)}
+td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}
+tbody tr{cursor:pointer}tbody tr:hover{background:#f4f8fb}
+.sev{display:inline-block;padding:1px 9px;border-radius:99px;color:#fff;font-size:12px;background:var(--c)}
+.res{font-family:ui-monospace,monospace;font-size:12px;word-break:break-all;color:var(--mute)}
+.pager{display:flex;gap:10px;align-items:center;margin:12px 0;color:var(--mute)}
+#detail{margin-top:14px}#detail h3{margin:0 0 6px}#detail p{margin:6px 0;max-width:80ch}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:40px;text-align:center;color:var(--mute)}
+dialog{border:0;border-radius:14px;padding:26px;width:min(460px,92vw)}dialog::backdrop{background:#0008}
+dialog h3{margin:0 0 4px;font:600 22px Georgia,serif}dialog p{margin:0 0 14px;color:var(--mute);font-size:14px}
+label{display:block;margin:10px 0 3px;font-size:13.5px;font-weight:600}
+dialog input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px}
+.err{color:var(--crit);font-size:13.5px;margin-top:10px;white-space:pre-wrap;word-break:break-word}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+@media(max-width:800px){body{grid-template-columns:1fr}aside{flex-direction:row;flex-wrap:wrap}main{padding:18px}}
+</style>
+</head>
+<body>
+<aside>
+  <h1>Cloud Posture</h1>
+  <div id="accts"></div>
+  <button class="btn" id="addBtn">Add AWS account</button>
+</aside>
+<main id="main"></main>
+
+<dialog id="dlg">
+  <form method="dialog" id="form">
+    <h3>Connect an AWS account</h3>
+    <p>Use an IAM user with read-only access (SecurityAudit and ViewOnlyAccess). The keys go straight to the scanner and are not stored by this dashboard.</p>
+    <label for="f_alias">Account name</label><input id="f_alias" placeholder="Production">
+    <label for="f_ak">Access key ID</label><input id="f_ak" required autocomplete="off">
+    <label for="f_sk">Secret access key</label><input id="f_sk" type="password" required autocomplete="off">
+    <label for="f_st">Session token (only for temporary keys)</label><input id="f_st" autocomplete="off">
+    <div class="err" id="err"></div>
+    <div class="actions"><button type="button" class="btn ghost" id="cancel">Cancel</button><button class="btn" id="go">Connect and scan</button></div>
+  </form>
+</dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SEV=["critical","high","medium","low","informational"];
+const COL={critical:"var(--crit)",high:"var(--high)",medium:"var(--medium)",low:"var(--low)",informational:"var(--informational)"};
+let accts=[],cur=null,D=null,tab="overview",pg=0,sel=null,timer=null;
+const PAGE=100;
+
+async function api(path,opt={}){
+  const r=await fetch("/api"+path,{headers:{"Content-Type":"application/json"},...opt});
+  const t=await r.text();let j;try{j=JSON.parse(t)}catch{j=t}
+  if(!r.ok)throw new Error(typeof j==="object"&&j?(j.detail||t):t);
+  return j;
+}
+
+async function loadAccounts(){
+  accts=await api("/accounts");
+  $("#accts").innerHTML=accts.map(a=>`<button class="acct ${a.id===cur?"on":""}" data-id="${a.id}">
+    <b><span class="dot ${a.connected?"ok":a.connected===false?"bad":""}"></span>${esc(a.alias||a.account_id)}</b><small>${esc(a.account_id)}</small></button>`).join("");
+  document.querySelectorAll(".acct").forEach(b=>b.onclick=()=>{cur=b.dataset.id;pg=0;sel=null;loadAccounts();loadData()});
+  if(!cur&&accts[0]){cur=accts[0].id;loadAccounts();loadData()}
+  if(!accts.length)$("#main").innerHTML=`<div class="empty"><h2>No accounts yet</h2><p>Add an AWS account and the first scan starts automatically.</p></div>`;
+}
+
+async function loadData(refresh){
+  if(!cur)return;
+  try{D=await api(`/data/${cur}${refresh?"?refresh=true":""}`)}catch(e){$("#main").innerHTML=`<div class="empty">Could not load results.<div class="err">${esc(e.message)}</div></div>`;return}
+  render();
+  clearTimeout(timer);
+  if(["executing","available","scheduled"].includes(D.latest_state))timer=setTimeout(()=>{loadAccounts();loadData()},8000);
+}
+
+function bars(obj,color){
+  const e=Object.entries(obj||{}).slice(0,8),m=Math.max(1,...e.map(x=>x[1]));
+  return e.length?e.map(([k,v])=>`<div class="row"><span title="${esc(k)}">${esc(k)}</span><div class="bar"><i style="width:${v/m*100}%;${color?`background:${color(k)}`:""}"></i></div><em>${v}</em></div>`).join(""):"<p>Nothing to show.</p>";
+}
+
+function render(){
+  const a=accts.find(x=>x.id===cur)||{},S=D.summary,st=D.latest_state;
+  const chip=["executing","available","scheduled"].includes(st)?`<span class="chip run">Scan running</span>`:st==="failed"?`<span class="chip fail">Scan failed</span>`:st==="completed"?`<span class="chip done">Scan complete</span>`:"";
+  let h=`<div class="top"><h2>${esc(a.alias||a.account_id||"Account")}</h2>${chip}
+    <button class="btn ghost" id="rescan">Scan again</button><button class="btn ghost" id="refresh">Reload results</button><button class="btn danger" id="del">Disconnect</button></div>`;
+  if(!S){h+=`<div class="empty"><h2>${st?"Scan in progress":"No scan yet"}</h2><p>Results appear here when the first scan finishes. This page checks every few seconds.</p></div>`;$("#main").innerHTML=h;wire();return}
+  const sev=S.severity,tot=S.pass+S.fail||1;
+  h+=`<section class="ribbon"><div class="big">${S.fail} failed checks<small>of ${S.pass+S.fail} evaluated, ${Math.round(S.pass/tot*100)}% passing</small></div>
+   <div class="strip" role="img" aria-label="Findings by severity">${SEV.map(k=>sev[k]?`<i style="width:${sev[k]/tot*100}%;background:${COL[k]}"></i>`:"").join("")}<i style="flex:1;background:var(--pass);opacity:.85"></i></div>
+   <div class="legend">${SEV.map(k=>`<span style="--c:${COL[k]}">${k} <b>${sev[k]||0}</b></span>`).join("")}<span style="--c:var(--pass)">passed <b>${S.pass}</b></span></div></section>
+   <div class="tabs"><button data-t="overview" class="${tab==="overview"?"on":""}">Overview</button><button data-t="findings" class="${tab==="findings"?"on":""}">Findings</button></div>`;
+  h+=tab==="overview"?`<div class="grid">
+    <div class="card"><h3>Failed checks by service</h3>${bars(S.service)}</div>
+    <div class="card"><h3>Failed checks by region</h3>${bars(S.region)}</div>
+    <div class="card"><h3>Most common failures</h3>${S.top_checks.map(c=>`<div class="row" style="grid-template-columns:1fr 44px"><span title="${esc(c.check_id)}">${esc(c.title)}</span><em>${c.count}</em></div>`).join("")||"<p>Nothing to show.</p>"}</div></div>`:findingsHTML();
+  $("#main").innerHTML=h;wire();if(tab==="findings")wireFindings();
+}
+
+function filtered(){
+  const g=id=>($("#"+id)||{}).value||"";
+  return D.findings.filter(f=>(!g("fs")||f.status===g("fs"))&&(!g("fv")||f.severity===g("fv"))&&(!g("fsv")||f.service===g("fsv"))&&
+    (!g("fq")||[f.title,f.resource,f.check_id,f.region].join(" ").toLowerCase().includes(g("fq").toLowerCase())));
+}
+let F={fs:"FAIL",fv:"",fsv:"",fq:""};
+function findingsHTML(){
+  const svc=[...new Set(D.findings.map(f=>f.service).filter(Boolean))].sort();
+  return `<div class="filters">
+   <select id="fs"><option value="">All results</option><option>FAIL</option><option>PASS</option></select>
+   <select id="fv"><option value="">All severities</option>${SEV.map(s=>`<option>${s}</option>`).join("")}</select>
+   <select id="fsv"><option value="">All services</option>${svc.map(s=>`<option>${esc(s)}</option>`).join("")}</select>
+   <input id="fq" placeholder="Search title, resource, region" aria-label="Search findings"></div><div id="tbl"></div><div id="detail"></div>`;
+}
+function wireFindings(){
+  for(const k in F)$("#"+k).value=F[k];
+  document.querySelectorAll(".filters select,.filters input").forEach(el=>el.oninput=()=>{F[el.id]=el.value;pg=0;sel=null;table()});
+  table();
+}
+function table(){
+  const rows=filtered(),n=rows.length,s=pg*PAGE,page=rows.slice(s,s+PAGE);
+  $("#tbl").innerHTML=n?`<table><thead><tr><th>Severity</th><th>Result</th><th>Check</th><th>Service</th><th>Region</th><th>Resource</th></tr></thead><tbody>${page.map((f,i)=>
+   `<tr data-i="${s+i}"><td><span class="sev" style="--c:${COL[f.severity]||"#999"}">${esc(f.severity)}</span></td><td>${esc(f.status)}</td><td>${esc(f.title)}</td><td>${esc(f.service)}</td><td>${esc(f.region)}</td><td class="res">${esc(f.resource)}</td></tr>`).join("")}</tbody></table>
+   <div class="pager"><button class="btn ghost" id="pv" ${pg?"":"disabled"}>Previous</button>${s+1}-${Math.min(s+PAGE,n)} of ${n}<button class="btn ghost" id="nx" ${s+PAGE<n?"":"disabled"}>Next</button></div>`:`<div class="empty">No findings match these filters.</div>`;
+  document.querySelectorAll("tbody tr").forEach(tr=>tr.onclick=()=>{const f=rows[+tr.dataset.i];
+    $("#detail").innerHTML=`<div class="card"><h3>${esc(f.title)}</h3><p>${esc(f.message)}</p><p class="res">${esc(f.resource)}</p>
+     ${f.risk?`<p><b>Risk.</b> ${esc(f.risk)}</p>`:""}${f.fix?`<p><b>How to fix.</b> ${esc(f.fix)} ${f.fix_url?`<a href="${esc(f.fix_url)}" target="_blank" rel="noopener">Read more</a>`:""}</p>`:""}</div>`;
+    $("#detail").scrollIntoView({behavior:"smooth",block:"nearest"})});
+  if($("#pv")){$("#pv").onclick=()=>{pg--;table()};$("#nx").onclick=()=>{pg++;table()}}
+}
+
+function wire(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+  const bind=(id,fn)=>{const el=$("#"+id);if(el)el.onclick=fn};
+  bind("refresh",()=>loadData(true));
+  bind("rescan",async()=>{try{await api(`/scan/${cur}`,{method:"POST"});loadAccounts();loadData()}catch(e){alert(e.message)}});
+  bind("del",async()=>{if(!confirm("Disconnect this account and delete its stored scan data?"))return;
+    try{await api(`/accounts/${cur}`,{method:"DELETE"});cur=null;D=null;await loadAccounts();if(!cur)$("#main").innerHTML=""}catch(e){alert(e.message)}});
+}
+
+$("#addBtn").onclick=()=>{$("#err").textContent="";$("#dlg").showModal()};
+$("#cancel").onclick=()=>$("#dlg").close();
+$("#form").onsubmit=async e=>{
+  e.preventDefault();const go=$("#go");go.disabled=true;go.textContent="Checking keys, connecting, starting scan...";$("#err").textContent="";
+  try{
+    const r=await api("/accounts",{method:"POST",body:JSON.stringify({alias:$("#f_alias").value,access_key_id:$("#f_ak").value.trim(),secret_access_key:$("#f_sk").value.trim(),session_token:$("#f_st").value.trim()||null})});
+    $("#form").reset();$("#dlg").close();cur=r.provider_id;await loadAccounts();loadData();
+  }catch(x){$("#err").textContent=x.message}
+  go.disabled=false;go.textContent="Connect and scan";
+};
+loadAccounts().catch(e=>$("#main").innerHTML=`<div class="empty">Cannot reach the backend.<div class="err">${esc(e.message)}</div></div>`);
+</script>
+</body>
+</html>
